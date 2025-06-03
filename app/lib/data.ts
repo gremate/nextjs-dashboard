@@ -7,12 +7,9 @@ await sql.connect(sqlConfig);
 
 export async function fetchRevenue() {
     try {
-        // console.log('Fetching revenue data...');
-        // await new Promise((resolve) => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const result = await sql.query<Revenue>`SELECT * FROM revenue`;
-
-        // console.log('Data fetch completed after 3 seconds.');
 
         return result.recordset;
     } catch (error) {
