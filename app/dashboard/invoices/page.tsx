@@ -22,7 +22,11 @@ export default async function Page(props: { searchParams?: Promise<{ query?: str
                 <Search placeholder="Search invoices..." />
                 <CreateInvoice />
             </div>
-            <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+            <Suspense
+                // key is necessary to show the fallback also for search and page updates
+                key={query + currentPage}
+                fallback={<InvoicesTableSkeleton />}
+            >
                 <Table query={query} currentPage={currentPage} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
