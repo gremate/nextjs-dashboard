@@ -70,59 +70,54 @@ export async function fetchCardData() {
     }
 }
 
-// const ITEMS_PER_PAGE = 6;
-// export async function fetchFilteredInvoices(query: string, currentPage: number) {
-//     const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+const ITEMS_PER_PAGE = 6;
+export async function fetchFilteredInvoices(query: string, currentPage: number) {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-//     try {
-//         const invoices = await sql<InvoicesTable[]>`
-//       SELECT
-//         invoices.id,
-//         invoices.amount,
-//         invoices.date,
-//         invoices.status,
-//         customers.name,
-//         customers.email,
-//         customers.image_url
-//       FROM invoices
-//       JOIN customers ON invoices.customer_id = customers.id
-//       WHERE
-//         customers.name ILIKE ${`%${query}%`} OR
-//         customers.email ILIKE ${`%${query}%`} OR
-//         invoices.amount::text ILIKE ${`%${query}%`} OR
-//         invoices.date::text ILIKE ${`%${query}%`} OR
-//         invoices.status ILIKE ${`%${query}%`}
-//       ORDER BY invoices.date DESC
-//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-//     `;
+    try {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-//         return invoices;
-//     } catch (error) {
-//         console.error("Database Error:", error);
-//         throw new Error("Failed to fetch invoices.");
-//     }
-// }
+        const result = await sql.query<InvoicesTable>`
+            SELECT invoices.id, invoices.amount, invoices.date, invoices.status, customers.name, customers.email, customers.image_url
+            FROM invoices
+            JOIN customers ON invoices.customer_id = customers.id
+            WHERE
+                customers.name COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`} OR
+                customers.email COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`} OR
+                CAST(invoices.amount AS NVARCHAR) LIKE ${`%${query}%`} OR
+                CAST(invoices.date AS NVARCHAR) LIKE ${`%${query}%`} OR
+                invoices.status COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`}
+            ORDER BY invoices.date DESC
+            OFFSET ${offset} ROWS FETCH NEXT ${ITEMS_PER_PAGE} ROWS ONLY
+        `;
 
-// export async function fetchInvoicesPages(query: string) {
-//     try {
-//         const data = await sql`SELECT COUNT(*)
-//     FROM invoices
-//     JOIN customers ON invoices.customer_id = customers.id
-//     WHERE
-//       customers.name ILIKE ${`%${query}%`} OR
-//       customers.email ILIKE ${`%${query}%`} OR
-//       invoices.amount::text ILIKE ${`%${query}%`} OR
-//       invoices.date::text ILIKE ${`%${query}%`} OR
-//       invoices.status ILIKE ${`%${query}%`}
-//   `;
+        return result.recordset;
+    } catch (error) {
+        console.error("Database Error:", error);
+        throw new Error("Failed to fetch invoices.");
+    }
+}
 
-//         const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
-//         return totalPages;
-//     } catch (error) {
-//         console.error("Database Error:", error);
-//         throw new Error("Failed to fetch total number of invoices.");
-//     }
-// }
+export async function fetchInvoicesPages(query: string) {
+    try {
+        const result = await sql.query`
+            SELECT COUNT(*)
+            FROM invoices
+            JOIN customers ON invoices.customer_id = customers.id
+            WHERE
+                customers.name COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`} OR
+                customers.email COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`} OR
+                CAST(invoices.amount AS NVARCHAR) LIKE ${`%${query}%`} OR
+                CAST(invoices.date AS NVARCHAR) LIKE ${`%${query}%`} OR
+                invoices.status COLLATE SQL_Latin1_General_CP1_CI_AS LIKE ${`%${query}%`}
+        `;
+
+        return Math.ceil(result.recordset[0][""] / ITEMS_PER_PAGE);
+    } catch (error) {
+        console.error("Database Error:", error);
+        throw new Error("Failed to fetch total number of invoices.");
+    }
+}
 
 // export async function fetchInvoiceById(id: string) {
 //     try {
