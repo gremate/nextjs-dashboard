@@ -127,7 +127,7 @@ export async function fetchInvoiceById(id: string) {
             WHERE invoices.id = ${id};
         `;
 
-        return { ...result.recordset[0], amount: result.recordset[0].amount / 100 };
+        return result.recordset.length ? { ...result.recordset[0], amount: result.recordset[0].amount / 100 } : undefined;
     } catch (error) {
         console.error("Database Error:", error);
         throw new Error("Failed to fetch invoice.");
