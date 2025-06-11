@@ -1,5 +1,5 @@
 import sql from "mssql";
-import { CustomerField, CustomersTableType, InvoiceForm, InvoicesTable, LatestInvoiceRaw, Revenue } from "./definitions";
+import { CustomerField, CustomersTableType, InvoiceForm, InvoicesTable, LatestInvoiceRaw, Revenue, User } from "./definitions";
 import { formatCurrency } from "./utils";
 import { sqlConfig } from "./sql-config";
 
@@ -181,3 +181,14 @@ export async function fetchCustomers() {
 //         throw new Error("Failed to fetch customer table.");
 //     }
 // }
+
+export async function fetchUser(email: string): Promise<User | undefined> {
+    try {
+        const result = await sql.query<User>`SELECT * FROM users WHERE email = ${email}`;
+
+        return result.recordset[0];
+    } catch (error) {
+        console.error("Failed to fetch user:", error);
+        throw new Error("Failed to fetch user.");
+    }
+}
